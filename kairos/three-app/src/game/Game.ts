@@ -92,7 +92,7 @@ export class Game {
     this.input = new InputManager({
       canvas: opts.canvas,
       camera: opts.camera,
-      pickables: () => this.board.getPickables(),
+      grid: this.grid,
     });
 
     this.selection = new SelectionSystem({
