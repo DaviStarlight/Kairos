@@ -128,6 +128,11 @@ export class Game {
 
   private focusCameraForCurrentPlayer(immediate = false): void {
     if (!this.cameraController) return;
+    // In Solo mode the human player keeps the camera wherever they parked it.
+    // Only Local 2P rotates per turn (so each player sees the board from their
+    // own side). The HUD's "FOCAR" button still calls focusOnPlayer directly
+    // when the user wants to snap back manually.
+    if (!this.isLocalTwoPlayer) return;
     const p = this.state.currentPlayer;
     if (this.lastFocusedPlayer === p && !immediate) return;
     this.lastFocusedPlayer = p;

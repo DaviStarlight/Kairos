@@ -147,10 +147,12 @@ export class CameraController {
    * radius receive gentle "settle" values for cinematic effect.
    */
   focusOnPlayer(player: Player, opts: { immediate?: boolean; duration?: number } = {}): void {
-    // Gold home view: looking from south-west toward the board (camera over row 0).
-    // Silver home view: rotated 180° around the up axis.
-    const goldTheta = Math.PI / 4;
-    const silverTheta = goldTheta + Math.PI;
+    // World convention (see Grid.ts): Gold home is at -Z, Silver home is at +Z.
+    // Three's Spherical: theta=0 → camera on +Z axis (Silver side). So Silver
+    // view = π/4 (camera over +Z, looking back at the board); Gold view = π/4
+    // rotated 180° around up so the camera sits over -Z (Gold side).
+    const silverTheta = Math.PI / 4;
+    const goldTheta = silverTheta + Math.PI;
     const targetTheta = player === 'gold' ? goldTheta : silverTheta;
     const polar = Math.PI / 3.2;
     const radius = clamp(this.spherical.radius, this.minRadius + 1, this.maxRadius - 1);

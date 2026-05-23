@@ -35,7 +35,8 @@ export class Engine {
     this.cameraController = new CameraController(opts.canvas, {
       radius: 13,
       polar: Math.PI / 3.2,
-      azimuth: Math.PI / 4,
+      // Open over the Gold side (-Z) since Gold moves first.
+      azimuth: Math.PI / 4 + Math.PI,
     });
 
     // Keep camera aspect in sync with renderer.

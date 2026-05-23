@@ -54,7 +54,10 @@ export class Tile {
     this.pos = opts.pos;
     this.baseColor = (opts.isLight ? COLORS.tileLight : COLORS.tileDark).clone();
 
-    const geom = new BoxGeometry(opts.tileSize * 0.97, 0.18, opts.tileSize * 0.97);
+    // Tiles fill 100% of their cell — leaving any gap caused inconsistent
+    // raycaster hits along the borders (clicks falling in the seam picked
+    // nothing). Visual separation is handled by the light/dark colour split.
+    const geom = new BoxGeometry(opts.tileSize, 0.18, opts.tileSize);
     geom.translate(0, -0.09, 0);
 
     const mat = new MeshStandardMaterial({

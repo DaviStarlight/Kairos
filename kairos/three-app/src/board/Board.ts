@@ -54,6 +54,10 @@ export class Board {
         pos,
         worldX: world.x,
         worldZ: world.z,
+        // Use the full tile size so adjacent tiles touch edge-to-edge — any
+        // gap (even 1-2%) creates dead pixels where the raycaster misses both
+        // neighbours, which the player feels as inconsistent click detection.
+        // Visual separation comes from the light/dark colour alternation.
         tileSize: this.grid.tileSize,
         isLight,
       });
