@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background: #0b0d12;
+}
+
+#render-canvas {
+  display: block;
+  outline: none;
+  touch-action: none;
+}
+
+.ui-panel {
+  @apply pointer-events-auto bg-kairos-panel border border-kairos-border backdrop-blur-md shadow-panel rounded-xl;
+}
+
+.ui-label {
+  @apply text-[10px] uppercase tracking-[0.3em] text-white/40 font-display;
+}
+
+.ui-value {
+  @apply text-base font-display tracking-wider text-white;
+}
+
+.ui-chip {
+  @apply inline-flex items-center gap-2 px-2 py-1 rounded-md bg-white/5 border border-white/10 text-xs;
+}
+
+.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}

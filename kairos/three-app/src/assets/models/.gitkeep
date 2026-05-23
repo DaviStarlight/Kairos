@@ -1,0 +1,12 @@
+# Place GLB / GLTF model files here.
+# Reference them from src via the AssetManager:
+#
+#   await engine.assets.preload([
+#     { kind: 'model', id: 'kingWhite', url: '/src/assets/models/king-white.glb',
+#       options: { targetSize: 0.9, recenter: true, shadows: true } },
+#   ]);
+#
+# Then in your Piece factory:
+#
+#   const mesh = engine.assets.getModel('kingWhite');
+#   if (mesh) pieceRoot.add(mesh);

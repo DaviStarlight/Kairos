@@ -1,0 +1,31 @@
+{
+  "name": "kairos-3d",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Kairos 3D — a cinematic 8x8 board game built with Three.js, TypeScript & Vite.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,html}\""
+  },
+  "dependencies": {
+    "gsap": "^3.12.5",
+    "three": "^0.165.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "@types/three": "^0.165.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
+    "autoprefixer": "^10.4.19",
+    "eslint": "^8.57.0",
+    "postcss": "^8.4.38",
+    "prettier": "^3.3.2",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1"
+  }
+}
