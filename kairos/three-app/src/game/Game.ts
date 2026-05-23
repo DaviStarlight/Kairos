@@ -14,7 +14,7 @@
  * The HUD is fed via a derived snapshot every `state:changed`. AI runs after a
  * brief delay whenever it's the AI's phase.
  */
-import { Group, Vector3, type Camera, type Object3D } from 'three';
+import { Group, type Camera, type Object3D } from 'three';
 import gsap from 'gsap';
 
 import { Grid } from '@grid/Grid';
@@ -27,6 +27,7 @@ import { InputManager } from '@input/InputManager';
 import { AnimationManager } from '@animations/AnimationManager';
 import { HUD, type HudSnapshot } from '@ui/HUD';
 import { RandomAI, type AIPlayer } from '@ai/AIPlayer';
+import type { CameraController } from '@camera/CameraController';
 import type { PieceType, Player, Position } from '@domain/index';
 import { PIECE_NAMES } from '@domain/index';
 
@@ -35,9 +36,11 @@ export interface GameOptions {
   tileSize?: number;
   parent: Group;
   camera: Camera;
+  /** Optional camera controller — required for the local 2P auto-rotate feature. */
+  cameraController?: CameraController;
   canvas: HTMLCanvasElement;
   hudRoot: HTMLElement;
-  /** Optional AI opponent — defaults to RandomAI for "silver". Pass null to disable. */
+  /** Optional AI opponent — defaults to RandomAI for "silver". Pass null for hot-seat. */
   ai?: AIPlayer | null;
 }
 
@@ -52,14 +55,18 @@ export class Game {
   readonly selection: SelectionSystem;
   private readonly pieces = new Map<string, Piece>();
   private readonly piecesRoot = new Group();
-  private readonly ai: AIPlayer | null;
+  private ai: AIPlayer | null;
+  private readonly defaultAi: AIPlayer;
   private readonly camera: Camera;
+  private readonly cameraController: CameraController | null;
   private readonly unsubs: Array<() => void> = [];
   private animating = false;
   private aiPending = false;
+  private lastFocusedPlayer: Player | null = null;
 
   constructor(opts: GameOptions) {
     this.camera = opts.camera;
+    this.cameraController = opts.cameraController ?? null;
     this.grid = new Grid({ size: opts.boardSize ?? 8, tileSize: opts.tileSize ?? 1 });
     this.state = new GameState();
     this.turns = new TurnManager(this.state);
@@ -76,6 +83,10 @@ export class Game {
       onPromote: (t) => this.state.promote(t),
       onRestart: () => this.restart(),
       onResign: () => this.state.resign(),
+      onToggleLocalTwoPlayer: (enabled) => this.setLocalTwoPlayer(enabled),
+      onFocusCurrentPlayer: () => {
+        this.cameraController?.focusOnPlayer(this.state.currentPlayer);
+      },
     });
 
     this.input = new InputManager({
@@ -91,8 +102,37 @@ export class Game {
       pieces: this.pieces,
     });
 
-    this.ai = opts.ai === undefined ? new RandomAI('silver') : opts.ai;
+    this.defaultAi = opts.ai === undefined ? new RandomAI('silver') : (opts.ai ?? new RandomAI('silver'));
+    this.ai = opts.ai === undefined ? this.defaultAi : opts.ai;
     this.wireEvents();
+  }
+
+  // ─── Local 2P / AI toggle ─────────────────────────────────
+  /** Hot-seat mode: disables AI and triggers the auto camera flip per turn. */
+  setLocalTwoPlayer(enabled: boolean): void {
+    const newAi = enabled ? null : this.defaultAi;
+    if (newAi === this.ai) return;
+    this.ai = newAi;
+    // Re-focus camera to current player when entering hot-seat mode.
+    if (enabled) {
+      this.focusCameraForCurrentPlayer();
+    } else {
+      this.maybeRunAi();
+    }
+    this.pushHud();
+  }
+
+  get isLocalTwoPlayer(): boolean {
+    return this.ai === null;
+  }
+
+  private focusCameraForCurrentPlayer(immediate = false): void {
+    if (!this.cameraController) return;
+    if (!this.isLocalTwoPlayer) return;
+    const p = this.state.currentPlayer;
+    if (this.lastFocusedPlayer === p && !immediate) return;
+    this.lastFocusedPlayer = p;
+    this.cameraController.focusOnPlayer(p, { immediate });
   }
 
   // ─── Lifecycle ────────────────────────────────────────────
@@ -100,6 +140,7 @@ export class Game {
     this.turns.start(); // emits state:changed + turn:advanced
     this.rebuildAllVisuals();
     this.pushHud();
+    this.focusCameraForCurrentPlayer(true);
     this.maybeRunAi();
   }
 
@@ -109,10 +150,12 @@ export class Game {
     this.pieces.clear();
     this.animating = false;
     this.aiPending = false;
+    this.lastFocusedPlayer = null;
     this.input.setEnabled(true);
     this.turns.restart();
     this.rebuildAllVisuals();
     this.pushHud();
+    this.focusCameraForCurrentPlayer(true);
     this.maybeRunAi();
   }
 
@@ -139,6 +182,7 @@ export class Game {
     this.unsubs.push(
       bus.on('turn:advanced', ({ player }) => {
         this.selection.onTurnChanged(player);
+        this.focusCameraForCurrentPlayer();
         this.maybeRunAi();
       }),
     );
@@ -275,6 +319,9 @@ export class Game {
       lastMove: this.state.moves.length
         ? this.state.moves[this.state.moves.length - 1]
         : null,
+      moveHistory: this.state.moves.slice(-8),
+      localTwoPlayer: this.isLocalTwoPlayer,
+      canFocusCamera: this.cameraController !== null,
     };
     this.hud.render(snap);
   }
@@ -304,7 +351,4 @@ export class Game {
 function factionLabel(p: Player): string {
   return p === 'gold' ? 'Ouro' : 'Prata';
 }
-
-// Re-export for downstream files
-export type { Vector3 };
 

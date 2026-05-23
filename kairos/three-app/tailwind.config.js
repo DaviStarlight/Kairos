@@ -5,16 +5,20 @@ export default {
     extend: {
       colors: {
         kairos: {
-          bg: '#0b0d12',
-          panel: 'rgba(15, 18, 26, 0.72)',
-          border: 'rgba(255,255,255,0.08)',
-          accent: '#7dd3fc',
-          gold: '#f5c97b',
+          bg: '#0a0b18',
+          panel: 'rgba(15, 18, 30, 0.78)',
+          border: 'rgba(240,192,64,0.12)',
+          accent: '#f0c040',
+          gold: '#f0c040',
+          silver: '#a8b8cc',
+          amber: '#f39c12',
+          emerald: '#3fb27f',
+          crimson: '#e74c3c',
           danger: '#ef4444',
         },
       },
       fontFamily: {
-        display: ['Rajdhani', 'system-ui', 'sans-serif'],
+        display: ['Cinzel', 'Rajdhani', 'system-ui', 'serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {

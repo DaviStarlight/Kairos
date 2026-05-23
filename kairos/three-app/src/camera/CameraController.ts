@@ -1,9 +1,20 @@
 /**
  * Cinematic isometric camera with smooth-damped orbit controls.
- * No external controls dependency — small, well-behaved, and tailored for a fixed board.
+ *
+ * Two operating modes:
+ *  - **Free orbit**: right/middle-mouse drag rotates the camera around the board,
+ *    wheel zooms. This is always available.
+ *  - **Auto focus**: `focusOnPlayer('gold' | 'silver')` reframes the camera over
+ *    the matching home rank with a graceful sweep — used by local 2P mode so
+ *    each player sees the board "from their side" when their turn starts.
+ *
+ * Both modes feed into the same spherical-damped update so the user can still
+ * grab the camera mid-sweep without fighting the animation.
  */
 import { PerspectiveCamera, Spherical, Vector3 } from 'three';
+import gsap from 'gsap';
 import { clamp, damp } from '@utils/math';
+import type { Player } from '@domain/index';
 
 export interface CameraConfig {
   fov?: number;
@@ -126,6 +137,54 @@ export class CameraController {
     const scale = Math.exp(e.deltaY * 0.0012);
     this.desired.radius = clamp(this.desired.radius * scale, this.minRadius, this.maxRadius);
   };
+
+  /**
+   * Smoothly reframe the camera over the given player's home side of the board.
+   * Gold is at row 0 (south, +Z direction in world space), silver at row 7 (north, -Z).
+   *
+   * Implementation: we tween `desired.theta` (azimuth) along the shortest arc,
+   * then the per-frame damp pulls the actual spherical to match. Polar and
+   * radius receive gentle "settle" values for cinematic effect.
+   */
+  focusOnPlayer(player: Player, opts: { immediate?: boolean; duration?: number } = {}): void {
+    // Gold home view: looking from south-west toward the board (camera over row 0).
+    // Silver home view: rotated 180° around the up axis.
+    const goldTheta = Math.PI / 4;
+    const silverTheta = goldTheta + Math.PI;
+    const targetTheta = player === 'gold' ? goldTheta : silverTheta;
+    const polar = Math.PI / 3.2;
+    const radius = clamp(this.spherical.radius, this.minRadius + 1, this.maxRadius - 1);
+
+    // Take the shortest angular path (avoid spinning the long way around).
+    const cur = this.desired.theta;
+    let delta = targetTheta - cur;
+    while (delta > Math.PI) delta -= Math.PI * 2;
+    while (delta < -Math.PI) delta += Math.PI * 2;
+    const finalTheta = cur + delta;
+
+    if (opts.immediate) {
+      this.desired.theta = finalTheta;
+      this.desired.phi = polar;
+      this.desired.radius = radius;
+      this.spherical.copy(this.desired);
+      this.applyImmediate();
+      return;
+    }
+
+    gsap.killTweensOf(this.desired);
+    gsap.to(this.desired, {
+      theta: finalTheta,
+      phi: polar,
+      radius,
+      duration: opts.duration ?? 1.4,
+      ease: 'power3.inOut',
+    });
+  }
+
+  /** Snapshot helpers for HUD / debug. */
+  getAzimuth(): number {
+    return this.spherical.theta;
+  }
 
   dispose(): void {
     const el = this.canvas;

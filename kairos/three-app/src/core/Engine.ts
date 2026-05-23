@@ -44,6 +44,7 @@ export class Engine {
     this.game = new Game({
       parent: this.sceneManager.boardRoot,
       camera: this.cameraController.camera,
+      cameraController: this.cameraController,
       canvas: opts.canvas,
       hudRoot: opts.hudRoot,
     });
