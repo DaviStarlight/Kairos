@@ -456,7 +456,14 @@ export class GameState {
     if (next === this.phase) return;
     const prev = this.phase;
     this.phase = next;
-    if (!silent) this.events.emit('phase:changed', { phase: next, prev });
+    if (!silent) {
+      this.events.emit('phase:changed', { phase: next, prev });
+      // CRITICAL: also emit state:changed so the HUD + SelectionSystem refresh.
+      // Without this, executeMove → setPhase('pressDecision') leaves the UI
+      // stuck on the previous phase, hiding the PRESSIONAR action and making
+      // it impossible to continue the turn.
+      this.events.emit('state:changed', undefined);
+    }
   }
 
   /** Recompute the set of positions currently locked in a Shield Wall pairing. */

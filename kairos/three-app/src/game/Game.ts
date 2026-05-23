@@ -128,7 +128,6 @@ export class Game {
 
   private focusCameraForCurrentPlayer(immediate = false): void {
     if (!this.cameraController) return;
-    if (!this.isLocalTwoPlayer) return;
     const p = this.state.currentPlayer;
     if (this.lastFocusedPlayer === p && !immediate) return;
     this.lastFocusedPlayer = p;
@@ -185,6 +184,13 @@ export class Game {
         this.focusCameraForCurrentPlayer();
         this.maybeRunAi();
       }),
+    );
+
+    // Phase changes inside the same turn (mainMove → pressDecision → pressMove
+    // → chargeAfterPress → …) must also drive the AI loop, otherwise the AI
+    // stalls after starting a press / charge sequence.
+    this.unsubs.push(
+      bus.on('phase:changed', () => this.maybeRunAi()),
     );
 
     this.unsubs.push(

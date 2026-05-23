@@ -74,8 +74,10 @@ export class InputManager {
     const dy = e.clientY - this.downY;
     const dist2 = dx * dx + dy * dy;
     const dt = performance.now() - this.downTime;
-    // Filter out drags so orbit/pan doesn't trigger clicks.
-    if (dist2 > 36 || dt > 400) return;
+    // Filter out drags so orbit/pan doesn't trigger clicks. The thresholds
+    // are deliberately generous (≈12px / 800ms) so brief mouse jitter during
+    // a normal click doesn't get suppressed.
+    if (dist2 > 144 || dt > 800) return;
     this.toNdc(e);
     const pos = this.pick();
     if (pos) this.events.emit('tile:click', { pos });
