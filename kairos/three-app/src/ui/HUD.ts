@@ -279,7 +279,7 @@ export class HUD {
 
         <!-- ░ PROMOTION MODAL ░ -->
         <div data-hud="promo-modal" class="ui-overlay ui-fade-out absolute inset-0 flex items-center justify-center">
-          <div class="ui-panel ui-glow px-10 py-7 text-center max-w-2xl">
+          <div class="ui-panel ui-glow px-10 py-7 pointer-events-auto text-center max-w-2xl">
             <div class="ui-label">Promoção</div>
             <div class="text-3xl font-display tracking-[0.25em] mt-1" style="color:${GOLD}">Escolha a transformação</div>
             <p class="text-xs text-white/60 mt-2 max-w-md mx-auto">O Doríforo alcançou a última fileira e deve assumir uma nova função em campo.</p>
@@ -289,7 +289,7 @@ export class HUD {
 
         <!-- ░ GAME OVER BANNER ░ -->
         <div data-hud="banner" class="ui-overlay ui-fade-out absolute inset-0 flex items-center justify-center">
-          <div class="ui-panel ui-glow px-14 py-10 text-center max-w-md">
+          <div class="ui-panel ui-glow px-14 py-10 text-center pointer-events-auto max-w-md">
             <div class="ui-label">Fim de Partida</div>
             <div data-hud="banner-text" class="text-5xl font-display tracking-[0.25em] mt-3"></div>
             <div data-hud="banner-sub" class="text-sm text-white/70 mt-3 leading-relaxed"></div>

@@ -91,6 +91,19 @@ body,
   pointer-events: none;
 }
 
+/* When an overlay is faded out, NOTHING inside it should be interactive ─
+ * not even descendants that explicitly opt back in (e.g. .ui-panel sets
+ * pointer-events: auto, which would otherwise win over the parent's :none
+ * since pointer-events isn't blocked by ancestors). Without this, the
+ * invisible REINICIAR button at screen center stole every middle click,
+ * triggering restart AND swallowing tile clicks before they reached the
+ * canvas raycaster.
+ */
+.ui-fade-out,
+.ui-fade-out * {
+  pointer-events: none !important;
+}
+
 /* Subtle lift on promotion cards */
 .ui-hover-lift {
   transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
